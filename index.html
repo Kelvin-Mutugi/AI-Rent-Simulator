@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Rent Survival Simulation</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background: #0f1117;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    #layout {
+      display: grid;
+      grid-template-columns: 3fr 1fr;
+      gap: 20px;
+    }
+
+    #sidePanel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .card {
+      background: #1a1d26;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .stress-bar {
+      height: 10px;
+      background: #333;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+
+    .stress-fill {
+      height: 100%;
+      background: #ff4c4c;
+      width: 0%;
+    }
+
+    #actionFeed {
+      font-size: 14px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    canvas {
+      background: #1a1d26;
+      border-radius: 10px;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>AI Rent Survival Simulation</h1>
+
+<div id="layout">
+  <canvas id="netWorthChart"></canvas>
+
+  <div id="sidePanel">
+
+    <div class="card" id="scoreboard"></div>
+
+    <div class="card" id="stressPanel"></div>
+
+    <div class="card">
+      <h3>Action Feed</h3>
+      <div id="actionFeed"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+
+/******************************************************
+  ECONOMY
+******************************************************/
+const economy = {
+  recession: false
+};
+
+/******************************************************
+  AI FACTORY
+******************************************************/
+function createAI(name, riskTolerance, discipline, intelligence, color) {
+  return {
+    name,
+    color,
+    cash: 5000,
+    salary: 2000,
+    rent: 800,
+    food: 400,
+    otherExpenses: 300,
+    investments: 0,
+    riskTolerance,
+    discipline,
+    intelligence,
+    stress: 0,
+    employed: true,
+    sideHustle: false,
+    business: null,
+    alive: true
+  };
+}
+
+const agents = [
+  createAI("Conservative", 0.2, 0.9, 0.8, "#4caf50"),
+  createAI("Balanced", 0.5, 0.7, 0.8, "#2196f3"),
+  createAI("Risky", 0.9, 0.3, 0.7, "#ff9800")
+];
+
+const TOTAL_MONTHS = 60;
+let currentMonth = 0;
+
+/******************************************************
+  CHART SETUP
+******************************************************/
+const ctx = document.getElementById("netWorthChart");
+
+const chart = new Chart(ctx, {
+  type: "line",
+  data: {
+    labels: [],
+    datasets: agents.map(ai => ({
+      label: ai.name,
+      data: [],
+      borderColor: ai.color,
+      tension: 0.3
+    }))
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { labels: { color: "white" } }
+    },
+    scales: {
+      x: { ticks: { color: "white" } },
+      y: { ticks: { color: "white" } }
+    }
+  }
+});
+
+/******************************************************
+  SIMULATION ENGINE
+******************************************************/
+
+function runMonth(ai) {
+
+  processIncome(ai);
+  processExpenses(ai);
+  randomEvents(ai);
+
+  const action = decisionEngine(ai);
+
+  applyInvestments(ai);
+  updateStress(ai);
+
+  if (ai.cash < 0) {
+    ai.alive = false;
+  }
+
+  return action;
+}
+
+function processIncome(ai) {
+  if (ai.employed) ai.cash += ai.salary;
+  if (ai.sideHustle) ai.cash += 300 + Math.random() * 400;
+  if (ai.business) ai.cash += ai.business.revenue;
+}
+
+function processExpenses(ai) {
+  ai.cash -= (ai.rent + ai.food + ai.otherExpenses);
+}
+
+function randomEvents(ai) {
+  const r = Math.random();
+
+  if (economy.recession && r < 0.08) {
+    ai.employed = false;
+    ai.stress += 20;
+  }
+  else if (r < 0.03) {
+    ai.employed = false;
+    ai.stress += 20;
+  }
+  else if (r < 0.06) {
+    ai.cash -= 2000;
+  }
+}
+
+function getContext(ai) {
+  const expenses = ai.rent + ai.food + ai.otherExpenses;
+  return {
+    emergencyMonths: ai.cash / expenses
+  };
+}
+
+/******************************************************
+  SCORING AI
+******************************************************/
+
+function decisionEngine(ai) {
+
+  const context = getContext(ai);
+
+  const scores = {
+    save: (3 - context.emergencyMonths) * 20
+          + ai.discipline * 10
+          - ai.riskTolerance * 5,
+
+    invest: context.emergencyMonths > 3
+          ? context.emergencyMonths * 5
+            + ai.discipline * 10
+          : -100,
+
+    start_business: (ai.cash > 5000 && !ai.business)
+          ? ai.riskTolerance * 30
+          : -100,
+
+    job_search: !ai.employed ? 100 : -100
+  };
+
+  Object.keys(scores).forEach(k => {
+    scores[k] += (Math.random() - 0.5) * 5;
+  });
+
+  const best = Object.keys(scores).reduce((a,b)=>
+    scores[a] > scores[b] ? a : b
+  );
+
+  executeAction(ai, best);
+  return best;
+}
+
+function executeAction(ai, action) {
+  switch(action) {
+    case "invest":
+      const amount = ai.cash * 0.2;
+      ai.investments += amount;
+      ai.cash -= amount;
+      break;
+    case "start_business":
+      ai.cash -= 5000;
+      ai.business = { revenue: 1000 };
+      break;
+    case "job_search":
+      ai.employed = true;
+      break;
+  }
+}
+
+function applyInvestments(ai) {
+  const returnRate = (Math.random() - 0.5) * 0.1;
+  ai.investments *= (1 + returnRate);
+}
+
+function updateStress(ai) {
+  if (ai.cash < ai.rent) ai.stress += 15;
+  ai.stress = Math.max(0, ai.stress - 5);
+}
+
+/******************************************************
+  VISUAL UPDATES
+******************************************************/
+
+function updateUI(actions) {
+
+  chart.data.labels.push("M" + currentMonth);
+
+  agents.forEach((ai, i) => {
+    chart.data.datasets[i].data.push(ai.cash + ai.investments);
+  });
+
+  chart.update();
+
+  // Scoreboard
+  const scoreboard = document.getElementById("scoreboard");
+  scoreboard.innerHTML = "<h3>Scoreboard</h3>" +
+    agents.map(ai =>
+      `<div style="color:${ai.color}">
+        ${ai.name}: $${Math.round(ai.cash + ai.investments)}
+      </div>`
+    ).join("");
+
+  // Stress Panel
+  const stressPanel = document.getElementById("stressPanel");
+  stressPanel.innerHTML = "<h3>Stress Levels</h3>" +
+    agents.map(ai =>
+      `<div>${ai.name}
+        <div class="stress-bar">
+          <div class="stress-fill" 
+            style="width:${Math.min(ai.stress,100)}%">
+          </div>
+        </div>
+      </div>`
+    ).join("");
+
+  // Action Feed
+  const feed = document.getElementById("actionFeed");
+  feed.innerHTML += `
+    <div>
+      <strong>Month ${currentMonth}</strong><br>
+      ${agents.map(ai => `${ai.name}: ${actions[ai.name]}`).join("<br>")}
+      <hr>
+    </div>
+  `;
+}
+
+/******************************************************
+  ANIMATION LOOP
+******************************************************/
+
+function simulateMonth() {
+
+  if (currentMonth >= TOTAL_MONTHS) return;
+
+  currentMonth++;
+
+  const actions = {};
+
+  agents.forEach(ai => {
+    if (ai.alive) {
+      actions[ai.name] = runMonth(ai);
+    } else {
+      actions[ai.name] = "BANKRUPT";
+    }
+  });
+
+  updateUI(actions);
+
+  setTimeout(simulateMonth, 800);
+}
+
+simulateMonth();
+
+</script>
+</body>
+</html>
