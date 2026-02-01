@@ -1,55 +1,55 @@
- body {
-      background: #0f1117;
-      color: white;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-    }
+body {
+  background: #0f1117;
+  color: white;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+}
 
-    h1 {
-      text-align: center;
-    }
+h1 {
+  text-align: center;
+}
 
-    #layout {
-      display: grid;
-      grid-template-columns: 3fr 1fr;
-      gap: 20px;
-    }
+#layout {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 20px;
+}
 
-    #sidePanel {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
+#sidePanel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
-    .card {
-      background: #1a1d26;
-      padding: 15px;
-      border-radius: 8px;
-    }
+.card {
+  background: #1a1d26;
+  padding: 15px;
+  border-radius: 8px;
+}
 
-    .stress-bar {
-      height: 10px;
-      background: #333;
-      border-radius: 5px;
-      overflow: hidden;
-      margin-top: 5px;
-    }
+.stress-bar {
+  height: 10px;
+  background: #333;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 5px;
+}
 
-    .stress-fill {
-      height: 100%;
-      background: #ff4c4c;
-      width: 0%;
-    }
+.stress-fill {
+  height: 100%;
+  background: #ff4c4c;
+  width: 0%;
+}
 
-    #actionFeed {
-      font-size: 14px;
-      max-height: 200px;
-      overflow-y: auto;
-    }
+#actionFeed {
+  font-size: 14px;
+  max-height: 200px;
+  overflow-y: auto;
+}
 
-    canvas {
-      background: #1a1d26;
-      border-radius: 10px;
-      padding: 10px;
-    }
+canvas {
+  background: #1a1d26;
+  border-radius: 10px;
+  padding: 10px;
+}

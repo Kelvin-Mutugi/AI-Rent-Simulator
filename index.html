@@ -1,31 +1,28 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <title>AI Rent Survival Simulation</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+  <head>
+    <title>AI Rent Survival Simulation</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <h1>AI Rent Survival Simulation</h1>
 
-<h1>AI Rent Survival Simulation</h1>
+    <div id="layout">
+      <canvas id="netWorthChart"></canvas>
 
-<div id="layout">
-  <canvas id="netWorthChart"></canvas>
+      <div id="sidePanel">
+        <div class="card" id="scoreboard"></div>
 
-  <div id="sidePanel">
+        <div class="card" id="stressPanel"></div>
 
-    <div class="card" id="scoreboard"></div>
-
-    <div class="card" id="stressPanel"></div>
-
-    <div class="card">
-      <h3>Action Feed</h3>
-      <div id="actionFeed"></div>
+        <div class="card">
+          <h3>Action Feed</h3>
+          <div id="actionFeed"></div>
+        </div>
+      </div>
     </div>
 
-  </div>
-</div>
-
-<script src="script.js"></script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>

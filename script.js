@@ -1,9 +1,8 @@
-
 /******************************************************
   ECONOMY
 ******************************************************/
 const economy = {
-  recession: false
+  recession: false,
 };
 
 /******************************************************
@@ -26,14 +25,14 @@ function createAI(name, riskTolerance, discipline, intelligence, color) {
     employed: true,
     sideHustle: false,
     business: null,
-    alive: true
+    alive: true,
   };
 }
 
 const agents = [
   createAI("Conservative", 0.2, 0.9, 0.8, "#4caf50"),
   createAI("Balanced", 0.5, 0.7, 0.8, "#2196f3"),
-  createAI("Risky", 0.9, 0.3, 0.7, "#ff9800")
+  createAI("Risky", 0.9, 0.3, 0.7, "#ff9800"),
 ];
 
 const TOTAL_MONTHS = 60;
@@ -48,23 +47,23 @@ const chart = new Chart(ctx, {
   type: "line",
   data: {
     labels: [],
-    datasets: agents.map(ai => ({
+    datasets: agents.map((ai) => ({
       label: ai.name,
       data: [],
       borderColor: ai.color,
-      tension: 0.3
-    }))
+      tension: 0.3,
+    })),
   },
   options: {
     responsive: true,
     plugins: {
-      legend: { labels: { color: "white" } }
+      legend: { labels: { color: "white" } },
     },
     scales: {
       x: { ticks: { color: "white" } },
-      y: { ticks: { color: "white" } }
-    }
-  }
+      y: { ticks: { color: "white" } },
+    },
+  },
 });
 
 /******************************************************
@@ -72,7 +71,6 @@ const chart = new Chart(ctx, {
 ******************************************************/
 
 function runMonth(ai) {
-
   processIncome(ai);
   processExpenses(ai);
   randomEvents(ai);
@@ -96,7 +94,7 @@ function processIncome(ai) {
 }
 
 function processExpenses(ai) {
-  ai.cash -= (ai.rent + ai.food + ai.otherExpenses);
+  ai.cash -= ai.rent + ai.food + ai.otherExpenses;
 }
 
 function randomEvents(ai) {
@@ -105,12 +103,10 @@ function randomEvents(ai) {
   if (economy.recession && r < 0.08) {
     ai.employed = false;
     ai.stress += 20;
-  }
-  else if (r < 0.03) {
+  } else if (r < 0.03) {
     ai.employed = false;
     ai.stress += 20;
-  }
-  else if (r < 0.06) {
+  } else if (r < 0.06) {
     ai.cash -= 2000;
   }
 }
@@ -118,7 +114,7 @@ function randomEvents(ai) {
 function getContext(ai) {
   const expenses = ai.rent + ai.food + ai.otherExpenses;
   return {
-    emergencyMonths: ai.cash / expenses
+    emergencyMonths: ai.cash / expenses,
   };
 }
 
@@ -127,32 +123,31 @@ function getContext(ai) {
 ******************************************************/
 
 function decisionEngine(ai) {
-
   const context = getContext(ai);
 
   const scores = {
-    save: (3 - context.emergencyMonths) * 20
-          + ai.discipline * 10
-          - ai.riskTolerance * 5,
+    save:
+      (3 - context.emergencyMonths) * 20 +
+      ai.discipline * 10 -
+      ai.riskTolerance * 5,
 
-    invest: context.emergencyMonths > 3
-          ? context.emergencyMonths * 5
-            + ai.discipline * 10
-          : -100,
+    invest:
+      context.emergencyMonths > 3
+        ? context.emergencyMonths * 5 + ai.discipline * 10
+        : -100,
 
-    start_business: (ai.cash > 5000 && !ai.business)
-          ? ai.riskTolerance * 30
-          : -100,
+    start_business:
+      ai.cash > 5000 && !ai.business ? ai.riskTolerance * 30 : -100,
 
-    job_search: !ai.employed ? 100 : -100
+    job_search: !ai.employed ? 100 : -100,
   };
 
-  Object.keys(scores).forEach(k => {
+  Object.keys(scores).forEach((k) => {
     scores[k] += (Math.random() - 0.5) * 5;
   });
 
-  const best = Object.keys(scores).reduce((a,b)=>
-    scores[a] > scores[b] ? a : b
+  const best = Object.keys(scores).reduce((a, b) =>
+    scores[a] > scores[b] ? a : b,
   );
 
   executeAction(ai, best);
@@ -160,7 +155,7 @@ function decisionEngine(ai) {
 }
 
 function executeAction(ai, action) {
-  switch(action) {
+  switch (action) {
     case "invest":
       const amount = ai.cash * 0.2;
       ai.investments += amount;
@@ -178,7 +173,7 @@ function executeAction(ai, action) {
 
 function applyInvestments(ai) {
   const returnRate = (Math.random() - 0.5) * 0.1;
-  ai.investments *= (1 + returnRate);
+  ai.investments *= 1 + returnRate;
 }
 
 function updateStress(ai) {
@@ -191,7 +186,6 @@ function updateStress(ai) {
 ******************************************************/
 
 function updateUI(actions) {
-
   chart.data.labels.push("M" + currentMonth);
 
   agents.forEach((ai, i) => {
@@ -202,32 +196,40 @@ function updateUI(actions) {
 
   // Scoreboard
   const scoreboard = document.getElementById("scoreboard");
-  scoreboard.innerHTML = "<h3>Scoreboard</h3>" +
-    agents.map(ai =>
-      `<div style="color:${ai.color}">
+  scoreboard.innerHTML =
+    "<h3>Scoreboard</h3>" +
+    agents
+      .map(
+        (ai) =>
+          `<div style="color:${ai.color}">
         ${ai.name}: $${Math.round(ai.cash + ai.investments)}
-      </div>`
-    ).join("");
+      </div>`,
+      )
+      .join("");
 
   // Stress Panel
   const stressPanel = document.getElementById("stressPanel");
-  stressPanel.innerHTML = "<h3>Stress Levels</h3>" +
-    agents.map(ai =>
-      `<div>${ai.name}
+  stressPanel.innerHTML =
+    "<h3>Stress Levels</h3>" +
+    agents
+      .map(
+        (ai) =>
+          `<div>${ai.name}
         <div class="stress-bar">
           <div class="stress-fill" 
-            style="width:${Math.min(ai.stress,100)}%">
+            style="width:${Math.min(ai.stress, 100)}%">
           </div>
         </div>
-      </div>`
-    ).join("");
+      </div>`,
+      )
+      .join("");
 
   // Action Feed
   const feed = document.getElementById("actionFeed");
   feed.innerHTML += `
     <div>
       <strong>Month ${currentMonth}</strong><br>
-      ${agents.map(ai => `${ai.name}: ${actions[ai.name]}`).join("<br>")}
+      ${agents.map((ai) => `${ai.name}: ${actions[ai.name]}`).join("<br>")}
       <hr>
     </div>
   `;
@@ -238,14 +240,13 @@ function updateUI(actions) {
 ******************************************************/
 
 function simulateMonth() {
-
   if (currentMonth >= TOTAL_MONTHS) return;
 
   currentMonth++;
 
   const actions = {};
 
-  agents.forEach(ai => {
+  agents.forEach((ai) => {
     if (ai.alive) {
       actions[ai.name] = runMonth(ai);
     } else {
